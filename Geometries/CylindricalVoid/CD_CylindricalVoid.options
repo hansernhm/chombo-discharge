@@ -1,0 +1,28 @@
+# ====================================================================================================
+# CylindricalVoid class options
+# ====================================================================================================
+CylindricalVoid.use_electrode         = true          # Turn on/off electrode
+CylindricalVoid.use_dielectric        = true          # Turn on/off dielectric
+
+CylindricalVoid.wheel_live            = true          # Live electrode or not
+CylindricalVoid.wheel_radius          = 1             # Wheel radius
+CylindricalVoid.wheel_center          = 0 0 0         # Wheel center
+CylindricalVoid.wheel_curvature       = 0.1           # Wheel curvature (thickness)
+CylindricalVoid.wheel_stem_radius     = 0.01          # Wheel stem radius (< 0 => turn off this part)
+CylindricalVoid.wheel_smooth          = 1E-3          # Smoothing distance for CSG union
+CylindricalVoid.wheel_extra_thickness = 0.0           # Extra wheel thickness
+
+CylindricalVoid.box_dimensions        = 1 1 1         # Box dimensions
+CylindricalVoid.box_translate         = 0 0 0         # Box translation
+CylindricalVoid.box_permittivity      = 1.0           # Dielectric box permittivity
+CylindricalVoid.box_curvature         = 1             # Corner curvatures
+
+CylindricalVoid.profile_type          = none          # Profile type. 'square', 'sphere', 'cylinder_d' with d = 'x/y/z'
+CylindricalVoid.profile_translate     = 0 0 0         # Profile translation
+CylindricalVoid.profile_repetition_lo = 0 0 0         # Repetition pattern in low coordinate direction
+CylindricalVoid.profile_repetition_hi = 0 0 0         # Repetition pattern in high coordinate direction
+CylindricalVoid.profile_period        = 1 1 1         # Repetition period
+
+CylindricalVoid.square_dimensions     = 1 1 1         # Dimensions for squares/square channels
+CylindricalVoid.sphere_radius         = 1             # Radius for sphere profiles
+CylindricalVoid.cylinder_radius       = 1             # Radius for cylinder profiles
