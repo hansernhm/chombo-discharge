@@ -1,8 +1,8 @@
 # ====================================================================================================
 # AmrMesh class options
 # ====================================================================================================
-AmrMesh.lo_corner        = -4E-2 0 -1          ## Low corner of problem domain
-AmrMesh.hi_corner        =  4E-2  4E-2  1          ## High corner of problem domain
+AmrMesh.lo_corner        = -1.5E-2 0 -1          ## Low corner of problem domain
+AmrMesh.hi_corner        =  1.5E-2  1.5E-2  1          ## High corner of problem domain
 AmrMesh.verbosity        = -1                ## Controls verbosity. 
 AmrMesh.coarsest_domain  = 128 64 128       ## Number of cells on coarsest domain
 AmrMesh.max_amr_depth    = 2                 ## Maximum amr depth
