@@ -1,7 +1,7 @@
 # ====================================================================================================
 # Voltage curve
 # ====================================================================================================
-ItoKMCCylindricalVoid.potential = 1E4
+ItoKMCCylindricalVoid.potential = -1E4
 ItoKMCCylindricalVoid.basename  = pout
 
 # ====================================================================================================
@@ -39,13 +39,13 @@ Driver.verbosity                       = 2                # Engine verbosity
 Driver.geometry_generation             = chombo-discharge # Grid generation method, 'chombo-discharge' or 'chombo'
 Driver.geometry_scan_level             = 0                # Geometry scan level for chombo-discharge geometry generator
 Driver.ebis_memory_load_balance        = false            # If using Chombo geo-gen, use memory as loads for EBIS generation  
-Driver.output_dt                       = -1.0             # Output interval (values <= 0 enforces step-based output)
+Driver.output_dt                       = 0.1e-9             # Output interval (values <= 0 enforces step-based output)
 Driver.plot_interval                   = 10               # Plot interval
 Driver.checkpoint_interval             = 100              # Checkpoint interval
 Driver.regrid_interval                 = 10               # Regrid interval
 Driver.write_regrid_files              = false            # Write regrid files or not.
 Driver.write_restart_files             = false            # Write restart files or not
-Driver.initial_regrids                 = 0                # Number of initial regrids
+Driver.initial_regrids                 = 2                # Number of initial regrids
 Driver.do_init_load_balance            = false            # If true, load balance the first step in a fresh simulation.
 Driver.start_time                      = 0                # Start time (fresh simulations only)
 Driver.stop_time                       = 1.0              # Stop time
@@ -217,12 +217,12 @@ CylindricalVoid.wheel_smooth          = 1E-4          # Smoothing distance for C
 CylindricalVoid.wheel_extra_thickness = 0.3E-3           # Extra wheel thickness
 
 CylindricalVoid.box_dimensions        = 7E-2 1E-1 1         # Box dimensions
-CylindricalVoid.box_translate         = 0 1.5E-3 0         # Box translation
+CylindricalVoid.box_translate         = 0 1.6E-3 0         # Box translation
 CylindricalVoid.box_permittivity      = 2.0           # Dielectric box permittivity
 CylindricalVoid.box_curvature         = 1E-4             # Corner curvatures
 
 CylindricalVoid.profile_type          = cylinder_y          # Profile type. 'square', 'sphere', 'cylinder_d' with d = 'x/y/z'
-CylindricalVoid.profile_translate     = 0 -0.75E-3 0         # Profile translation
+CylindricalVoid.profile_translate     = 0 -0.85E-3 0         # Profile translation
 CylindricalVoid.profile_repetition_lo = 0 0 0         # Repetition pattern in low coordinate direction
 CylindricalVoid.profile_repetition_hi = 0 0 0         # Repetition pattern in high coordinate direction
 CylindricalVoid.profile_period        = 5.32E-3 0 1         # Repetition period
@@ -301,13 +301,20 @@ ItoKMCJSON.algorithm          = hybrid_midpoint ## 'ssa', 'tau_plain', 'tau_midp
 ItoKMCStreamerTagger.verbosity         = -1           # Verbosity
 ItoKMCStreamerTagger.plot              = false        # Turn on/off plotting of input fields.
 ItoKMCStreamerTagger.num_tag_boxes     = 0            # Number of allowed tag boxes (0 = tags allowe everywhere)
-ItoKMCStreamerTagger.tag_box1_lo       = 0.0 0.0 0.0  # Only allow tags that fall between
-ItoKMCStreamerTagger.tag_box1_hi       = 0.0 0.0 0.0  # these two corners
+ItoKMCStreamerTagger.tag_box1_lo       = 0 0 0  # Only allow tags that fall between
+ItoKMCStreamerTagger.tag_box1_hi       = 0 0 0  # these two corners
 ItoKMCStreamerTagger.buffer            = 0            # Grow tagged cells
+
+
+ItoKMCStreamerTagger.num_ref_boxes     = 1
+ItoKMCStreamerTagger.ref_box1_lo       = -1E-3 0.6E-3 0.0  # refine box in between
+ItoKMCStreamerTagger.ref_box1_hi       = 1E-3 0.8E-3 0.0  # these two corners
+ItoKMCStreamerTagger.ref_box1_lvl      = 5           
+
 
 ItoKMCStreamerTagger.refine_curvature  = 10.0         # Curvature refinement
 ItoKMCStreamerTagger.coarsen_curvature = 10.0         # Curvature coarsening	
 ItoKMCStreamerTagger.refine_alpha      = 2.0          # Set alpha refinement. Lower  => More mesh
 ItoKMCStreamerTagger.coarsen_alpha     = 0.1          # Set alpha coarsening. Higher => Less mesh
-ItoKMCStreamerTagger.max_coarsen_lvl   = 0            # Set max coarsening depth
+ItoKMCStreamerTagger.max_coarsen_lvl   = 2            # Set max coarsening depth
 
