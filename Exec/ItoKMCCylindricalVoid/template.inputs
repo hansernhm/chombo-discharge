@@ -1,7 +1,8 @@
 # ====================================================================================================
 # Voltage curve
 # ====================================================================================================
-ItoKMCCylindricalVoid.potential = -1E4
+ItoKMCCylindricalVoid.potential = 7.5E3
+ItoKMCCylindricalVoid.frequency = 1.0E8
 ItoKMCCylindricalVoid.basename  = pout
 
 # ====================================================================================================
@@ -11,7 +12,7 @@ AmrMesh.lo_corner        = -0.6E-2 0 -1          ## Low corner of problem domain
 AmrMesh.hi_corner        =  0.6E-2 1.5E-3  1          ## High corner of problem domain
 AmrMesh.verbosity        = -1                ## Controls verbosity. 
 AmrMesh.coarsest_domain  = 128 16 128       ## Number of cells on coarsest domain
-AmrMesh.max_amr_depth    = 7                 ## Maximum amr depth
+AmrMesh.max_amr_depth    = 5                 ## Maximum amr depth
 AmrMesh.max_sim_depth    = -1                ## Maximum simulation depth
 AmrMesh.fill_ratio       = 1.0               ## Fill ratio for grid generation
 AmrMesh.buffer_size      = 2                 ## Number of cells between grid levels
@@ -39,7 +40,7 @@ Driver.verbosity                       = 2                # Engine verbosity
 Driver.geometry_generation             = chombo-discharge # Grid generation method, 'chombo-discharge' or 'chombo'
 Driver.geometry_scan_level             = 0                # Geometry scan level for chombo-discharge geometry generator
 Driver.ebis_memory_load_balance        = false            # If using Chombo geo-gen, use memory as loads for EBIS generation  
-Driver.output_dt                       = 0.1e-9             # Output interval (values <= 0 enforces step-based output)
+Driver.output_dt                       = 0.2e-10             # Output interval (values <= 0 enforces step-based output)
 Driver.plot_interval                   = 10               # Plot interval
 Driver.checkpoint_interval             = 100              # Checkpoint interval
 Driver.regrid_interval                 = 10               # Regrid interval
@@ -49,7 +50,7 @@ Driver.initial_regrids                 = 2                # Number of initial re
 Driver.do_init_load_balance            = false            # If true, load balance the first step in a fresh simulation.
 Driver.start_time                      = 0                # Start time (fresh simulations only)
 Driver.stop_time                       = 1.0              # Stop time
-Driver.max_steps                       = 1000              # Maximum number of steps
+Driver.max_steps                       = 10000              # Maximum number of steps
 Driver.geometry_only                   = false            # Special option that ONLY plots the geometry
 Driver.write_memory                    = false            # Write MPI memory report
 Driver.write_loads                     = false            # Write (accumulated) computational loads
@@ -59,7 +60,7 @@ Driver.max_plot_depth                  = -1               # Restrict maximum plo
 Driver.max_chk_depth                   = -1               # Restrict chechkpoint depth (-1 => finest simulation level)	
 Driver.num_plot_ghost                  = 1                # Number of ghost cells to include in plots
 Driver.plt_vars                        = levelset         # 'tags', 'mpi_rank', 'levelset', 'loads'
-Driver.restart                         = 0                # Restart step (less or equal to 0 implies fresh simulation)
+Driver.restart                         = 1000                # Restart step (less or equal to 0 implies fresh simulation)
 Driver.allow_coarsening                = true             # Allows removal of grid levels according to CellTagger
 Driver.grow_geo_tags                   = 2                # How much to grow tags when using geometry-based refinement. 
 Driver.refine_angles                   = 15.              # Refine cells if angle between elements exceed this value.
@@ -249,7 +250,7 @@ ItoKMCGodunovStepper.load_balance_particles                = true               
 ItoKMCGodunovStepper.load_indices                          = -1                   ## Which particle containers to use for load balancing (-1 => all)
 ItoKMCGodunovStepper.load_per_cell                         = 1.0                  ## Default load per grid cell.
 ItoKMCGodunovStepper.box_sorting                           = morton               ## Box sorting when load balancing
-ItoKMCGodunovStepper.particles_per_cell                    = 64                   ## Max computational particles per cell
+ItoKMCGodunovStepper.particles_per_cell                    = 16                   ## Max computational particles per cell
 ItoKMCGodunovStepper.merge_interval                        = 1                    ## Time steps between superparticle merging
 ItoKMCGodunovStepper.regrid_superparticles                 = false                ## Make superparticles during regrids
 ItoKMCGodunovStepper.physics_dt_factor                     = 1.0                  ## Physics-based time step factor
@@ -274,7 +275,7 @@ ItoKMCGodunovStepper.rho_filter_max_stride                 = 1                  
 ItoKMCGodunovStepper.rho_filter_alpha                      = 0.5                  ## Filtering factor (0.5 is a bilinear filter)
 ItoKMCGodunovStepper.eb_tolerance                          = 0.0                  ## EB intersection test tolerance
 ItoKMCGodunovStepper.algorithm                             = euler_maruyama       ## Integration algorithm. 'euler_maruyama' or 'trapezoidal'
-
+ItoKMCGodunovStepper.plot_particles                        = false                 ## save particles in hdf5 files
 
 # ====================================================================================================
 # ItoKMCJSON class options
@@ -306,10 +307,10 @@ ItoKMCStreamerTagger.tag_box1_hi       = 0 0 0  # these two corners
 ItoKMCStreamerTagger.buffer            = 0            # Grow tagged cells
 
 
-ItoKMCStreamerTagger.num_ref_boxes     = 1
-ItoKMCStreamerTagger.ref_box1_lo       = -1E-3 0.6E-3 0.0  # refine box in between
-ItoKMCStreamerTagger.ref_box1_hi       = 1E-3 0.8E-3 0.0  # these two corners
-ItoKMCStreamerTagger.ref_box1_lvl      = 5           
+# ItoKMCStreamerTagger.num_ref_boxes     = 1
+# ItoKMCStreamerTagger.ref_box1_lo       = -1E-3 0.6E-3 0.0  # refine box in between
+# ItoKMCStreamerTagger.ref_box1_hi       = 1E-3 0.8E-3 0.0  # these two corners
+# ItoKMCStreamerTagger.ref_box1_lvl      = 3           
 
 
 ItoKMCStreamerTagger.refine_curvature  = 10.0         # Curvature refinement
