@@ -152,7 +152,7 @@
 		{
 		    // Specification of single computational particles.
 		    "single particle" : {         
-			"position" : [ 0, 0.75E-3, 0 ], // Position is at (0,00)
+			"position" : [ 0, 0E-3, 0 ], // Position is at (0,00)
 			"weight" : 1000              // Physical particle with weight = 1
 		    }
 		}
