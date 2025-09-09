@@ -45,6 +45,7 @@ int main(int argc, char* argv[]){
      ParmParse pp("ItoKMCCylindricalVoid");
      pp.get("potential", g_potential);
      pp.get("basename",  basename);
+     pp.get("frequency",  f);
      setPoutBaseName(basename);
   }
 
