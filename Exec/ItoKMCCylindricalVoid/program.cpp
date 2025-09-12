@@ -6,12 +6,15 @@
 #include <CD_RtLayout.H>
 #include <CD_McPhoto.H>
 #include <CD_ItoKMCJSON.H>
+#include <CD_LookupTable1D.H>
+#include <CD_DataParser.H>
 #include <CD_CylindricalVoid.H>
 #include <CD_ItoKMCGodunovStepper.H>
 #include <CD_ItoKMCStreamerTagger.H>
 #include "ParmParse.H"
 
 // This is the potential curve (constant in this case). Modify it if you want to.
+// now it's a square wave with f=1e8 Hz
 Real g_potential = 1.0;
 Real f = 1e8;  // Hz
 Real potential_curve(const Real a_time){
@@ -51,20 +54,35 @@ int main(int argc, char* argv[]){
 
   // Initialize RNG
   Random::seed();
-
+  
+  //Read the voltage and make it into a function
+  string voltageFile;
+  pp.get("VoltageCurve.filename", voltageFile);
+  LookupTable1D<> voltageData = DataParser::fractionalFileReadASCII(voltageFile, "time pulse", "");
+  // scale the voltage. 
+  Real scaleVoltage;
+  pp.get("VoltageCurve.peak", scaleVoltage);
+  voltageData.scale<1>(scaleVoltage*1E03);
+  voltageData.prepareTable(0,979955, LookupTable::Spacing::Uniform);
+  voltageData.writeStructuredData("voltageTable.dat");
+   
   auto compgeom    = RefCountedPtr<ComputationalGeometry> (new CylindricalVoid());
   auto amr         = RefCountedPtr<AmrMesh> (new AmrMesh());
   auto physics     = RefCountedPtr<ItoKMCPhysics> (new ItoKMCJSON());
   auto timestepper = RefCountedPtr<ItoKMCStepper<>> (new ItoKMCGodunovStepper<>(physics));
   auto tagger      = RefCountedPtr<CellTagger> (new ItoKMCStreamerTagger<ItoKMCStepper<>>(physics, timestepper, amr));
+  auto voltageCurve  = [&](const Real& time) -> Real { return voltageData.interpolate<1>(time);};
 
   // Set potential 
-  timestepper->setVoltage(potential_curve);
+  //timestepper->setVoltage(potential_curve);
+  timestepper->setVoltage(voltageCurve);
 
   // Set up the Driver and run it
   RefCountedPtr<Driver> engine = RefCountedPtr<Driver> (new Driver(compgeom, timestepper, amr, tagger));
   engine->setupAndRun(input_file);
+  
 
+  
 #ifdef CH_MPI
   CH_TIMER_REPORT();
   MPI_Finalize();
