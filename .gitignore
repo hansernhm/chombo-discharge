@@ -39,6 +39,8 @@ Exec/Examples/DischargeInception/**/report.txt
 Exec/Examples/DischargeInception/**/report.txt
 Exec/Tests/DischargeInception/**/report.txt
 Exec/ItoKMCCylindricalVoid/python/*.txt
+Exec/ItoKMCCylindricalVoid/python/*.dat
+Exec/ItoKMCCylindricalVoid/python/*.csv
 
 pout.*
 time.table*
