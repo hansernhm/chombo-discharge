@@ -20,7 +20,7 @@ def function_plot_and_fft(df, title='', plot_color='C0', nhead=0, ntail=0):
     time = df.time.values
     current = df.current.values
     
-    ax[0].plot(time, current, color=plot_color, linestyle='-', marker='x', label='Current {}'.format(title))  ## TIME DOMAIN PLOT
+    ax[0].plot(time, current, color=plot_color, linestyle='-', label='Current {}'.format(title))  ## TIME DOMAIN PLOT
     ax[0].set_ylabel('Current [A/m]')   ## SET Y LABEL
     ax[0].set_xlabel('Time [s]')  ## SET X LABEL
     ax[0].legend()  
@@ -31,7 +31,7 @@ def function_plot_and_fft(df, title='', plot_color='C0', nhead=0, ntail=0):
 
     yf1 = fft(current * w)  ### CALCULATE FFT
     xf = fftfreq(N, T)[:N//2]  ## CALCULATE FFT FREQUENCY ARRAY
-    ax[1].plot(xf, 20*np.log10( 2.0/N * np.abs(yf1[0:N//2])), color=plot_color, linestyle='-', marker='x', label='FFT current {}'.format(title)) ## PLOT FFT
+    ax[1].plot(xf, 20*np.log10( 2.0/N * np.abs(yf1[0:N//2])), color=plot_color, linestyle='-', label='FFT current {}'.format(title)) ## PLOT FFT
     ax[1].legend()
     plt.tight_layout() ### FORMATTING FOR SAVING
     ax[1].set_xlabel('Frequency [Hz]') ## SET X LABEL
@@ -75,12 +75,27 @@ if __name__ == '__main__':
         np.concatenate([[0], np.diff(collapsed['time']) * collapsed['current'].iloc[:-1]])
     )
 
-    print(collapsed)
     #plt.plot(collapsed['time'].values, collapsed['current'].values)
     # plt.xlabel('Time [s]')
     # plt.ylabel('Amps [A]')
     
-    function_plot_and_fft(collapsed)
+    df_voltage = pd.read_csv('periodic_square_wave.dat', sep=' ')
+    print(df_voltage.keys())
+    fig, ax1 = plt.subplots(figsize=(10, 5))
+    level = 12.5e3
+    ax1.plot(df_voltage['time'].values, df_voltage.pulse.values * level,color='tab:blue', label='Voltage')
+    ax1.set_xlabel('Time (s)')
+    
+    ax1.set_ylabel('Voltage (V)', color='tab:blue')
+    ax1.tick_params(axis='y', labelcolor='tab:blue')
+    ax2 = ax1.twinx()
+    ax2.plot(collapsed['time'].values, collapsed['current'].values, color='tab:red', linestyle='--', label='Current')
+    ax2.set_ylabel('Current (A/m)', color='tab:red')
+    ax2.tick_params(axis='y', labelcolor='tab:red')
+    plt.grid(True)
+    function_plot_and_fft(collapsed, ntail=350)
+    
     plt.tight_layout()
+    
     plt.show()
     
