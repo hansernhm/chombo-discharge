@@ -8,9 +8,9 @@ from scipy.signal.windows import blackman
 from scipy.signal.windows import hamming
 
 
-def function_plot_and_fft(df, title='', plot_color='C0', nhead=0, ntail=0):
+def function_plot_and_fft(ax, df, title='', plot_color='C0', nhead=0, ntail=0):
         
-    fig, ax = plt.subplots(2)
+    
     ntail = ntail  ## number of samples to cut at the beginning of recording
     df = df.drop(df.tail(ntail).index)  ## cut samples at beginning
     nhead = nhead  ## number of samples to cut at the end of recording
@@ -20,7 +20,8 @@ def function_plot_and_fft(df, title='', plot_color='C0', nhead=0, ntail=0):
     time = df.time.values
     current = df.current.values
     
-    ax[0].plot(time, current, color=plot_color, linestyle='-', label='Current {}'.format(title))  ## TIME DOMAIN PLOT
+    ax[0].plot(time, current, color=plot_color, linestyle='-', 
+               label='{}'.format(title))  ## TIME DOMAIN PLOT
     ax[0].set_ylabel('Current [A/m]')   ## SET Y LABEL
     ax[0].set_xlabel('Time [s]')  ## SET X LABEL
     ax[0].legend()  
@@ -31,15 +32,28 @@ def function_plot_and_fft(df, title='', plot_color='C0', nhead=0, ntail=0):
 
     yf1 = fft(current * w)  ### CALCULATE FFT
     xf = fftfreq(N, T)[:N//2]  ## CALCULATE FFT FREQUENCY ARRAY
-    ax[1].plot(xf, 20*np.log10( 2.0/N * np.abs(yf1[0:N//2])), color=plot_color, linestyle='-', label='FFT current {}'.format(title)) ## PLOT FFT
+    ax[1].plot(xf, 
+               20*np.log10( 2.0/N * np.abs(yf1[0:N//2])), 
+               color=plot_color,
+               linestyle='-',
+               label='FFT {}'.format(title)) ## PLOT FFT
     ax[1].legend()
     plt.tight_layout() ### FORMATTING FOR SAVING
     ax[1].set_xlabel('Frequency [Hz]') ## SET X LABEL
     ax[1].set_ylabel('Amplitude [dB] \n (ref.level 0 dBm)') ## SET Y LABEL
+    
+def write_pwl_file(path, time, values):
+    # for LTSpice sims
+    # Create two 1D arrays
+    a = np.array(time)
+    b = np.array(values)
 
+    # Save as columns in a text file
+    np.savetxt('output.txt', np.column_stack((a, b)))
 
 if __name__ == '__main__':
     df = pd.read_csv('curve.txt')
+    
 
     # group and collapse the data
     collapsed = df.groupby('time').agg({
@@ -74,7 +88,8 @@ if __name__ == '__main__':
     collapsed['Q_charge'] = np.cumsum(
         np.concatenate([[0], np.diff(collapsed['time']) * collapsed['current'].iloc[:-1]])
     )
-
+    
+    write_pwl_file('test.txt', collapsed['time'].values, collapsed['current'].values)
     #plt.plot(collapsed['time'].values, collapsed['current'].values)
     # plt.xlabel('Time [s]')
     # plt.ylabel('Amps [A]')
@@ -93,7 +108,10 @@ if __name__ == '__main__':
     ax2.set_ylabel('Current (A/m)', color='tab:red')
     ax2.tick_params(axis='y', labelcolor='tab:red')
     plt.grid(True)
-    function_plot_and_fft(collapsed, ntail=350)
+    
+    fig, ax = plt.subplots(2)
+    function_plot_and_fft(ax, collapsed, ntail=350, plot_color='C0', title='streamer phase')
+    function_plot_and_fft(ax, collapsed, nhead=0, ntail=400, plot_color='C1', title='avalanche phase')
     
     plt.tight_layout()
     
