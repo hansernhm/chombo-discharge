@@ -72,44 +72,16 @@ namespace Physics {
 
     protected:
       /*!
-	@brief Exit criterion for maximum field -- if the background field changes by this much the simulation is terminated.
+	@brief variable
       */
-      Real m_maxFieldExitCrit;
+      Real m_integratedValue;
 
       /*!
-	@brief Exit criterion for relative field -- if the relative change in the background field in any cell changes by this much the simulation is terminated.
+	@brief Integrate variable over domain wall. For example y-Electric field over wall area
+	@return Returns: integrated value
       */
-      Real m_relFieldExitCrit;
-
-      /*!
-	@brief Change in max field.
-      */
-      Real m_maxFieldChange;
-
-      /*!
-	@brief Change in relative field.
-      */
-      Real m_relFieldChange;
-
-      /*!
-	@brief For storing the background field.
-	@details This field is space- and surface-charge free and is filled by computeBackgroundField
-      */
-      MFAMRCellData m_backgroundField;
-
-      /*!
-	@brief Computes the background field. I.e., it allocates and fills m_backgroundField.
-      */
-      virtual void
-      computeBackgroundField() noexcept;
-
-      /*!
-	@brief Evaluate the maximum change in the background field.
-	@return Returns a pair: relative change, maximum change
-      */
-      [[nodiscard]]
-      virtual std::pair<Real, Real>
-      evaluateSpaceChargeEffects() noexcept;
+ 
+      integrateVariableOnDomainWall() noexcept;
     };
   } // namespace ItoKMC
 } // namespace Physics

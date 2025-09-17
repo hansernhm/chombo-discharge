@@ -45,7 +45,6 @@ ItoKMCIntegrateVariableOnDomainWall<I, C, R, F>::postInitialize() noexcept
 
   ItoKMCGodunovStepper<I, C, R, F>::postInitialize();
 
-  this->computeBackgroundField();
 }
 
 template <typename I, typename C, typename R, typename F>
@@ -59,7 +58,6 @@ ItoKMCIntegrateVariableOnDomainWall<I, C, R, F>::postRegrid() noexcept
 
   ItoKMCGodunovStepper<I, C, R, F>::postRegrid();
 
-  this->computeBackgroundField();
 }
 
 template <typename I, typename C, typename R, typename F>
@@ -73,7 +71,6 @@ ItoKMCIntegrateVariableOnDomainWall<I, C, R, F>::postCheckpointSetup() noexcept
 
   ItoKMCGodunovStepper<I, C, R, F>::postCheckpointSetup();
 
-  this->computeBackgroundField();
 }
 
 template <typename I, typename C, typename R, typename F>
@@ -87,7 +84,7 @@ ItoKMCIntegrateVariableOnDomainWall<I, C, R, F>::advance(const Real a_dt)
 
   const Real actualDt = ItoKMCGodunovStepper<I, C, R, F>::advance(a_dt);
 
-  const std::pair<Real, Real> fieldChange = this->evaluateSpaceChargeEffects();
+  const Real integratedValue = this->integrateVariableOnDomainWall();
 
   m_relFieldChange = fieldChange.first;
   m_maxFieldChange = fieldChange.second;
@@ -106,30 +103,8 @@ ItoKMCIntegrateVariableOnDomainWall<I, C, R, F>::computeDt()
 
   Real newDt = 0.0;
 
-  const bool noElectronsPresent = false;
+  newDt = ItoKMCGodunovStepper<I, C, R, F>::computeDt();
 
-  bool abortCondition = false; // make sure all simultaneous abort reasons are stated in the log
-
-  if ((m_maxFieldChange > m_maxFieldExitCrit) && (m_maxFieldExitCrit > 0.0)) {
-    pout() << "ItoKMCIntegrateVariableOnDomainWall -- abort because the max field (in any cell) changed by more than specified threshold (max_field_exit_crit)" << endl;
-    abortCondition = true;
-  }
-
-  if ((m_relFieldChange > m_relFieldExitCrit) && (m_relFieldExitCrit > 0.0)) {
-    pout() << "ItoKMCIntegrateVariableOnDomainWall -- abort because the relative field change in a cell is larger than specified threshold (rel_field_exit_crit)" << endl;
-    abortCondition = true;
-  }
-
-  if (noElectronsPresent) { // Abort if we're out of electrons.
-    pout() << "ItoKMCIntegrateVariableOnDomainWall -- abort because no electrons are present" << endl;
-    abortCondition = true;
-  }
-  if (abortCondition) {
-    newDt = 0.0;
-  }
-  else {
-    newDt = ItoKMCGodunovStepper<I, C, R, F>::computeDt();
-  }
 
   return newDt;
 }
@@ -149,95 +124,29 @@ ItoKMCIntegrateVariableOnDomainWall<I, C, R, F>::printStepReport() noexcept
   pout() << whitespace + "Delta E(rel) = " << 100.0 * m_relFieldChange << " (%)" << endl;
 }
 
-template <typename I, typename C, typename R, typename F>
-void
-ItoKMCIntegrateVariableOnDomainWall<I, C, R, F>::computeBackgroundField() noexcept
-{
-  CH_TIME("ItoKMCIntegrateVariableOnDomainWall::computeBackgroundField");
-  if (this->m_verbosity > 5) {
-    pout() << "ItoKMCIntegrateVariableOnDomainWall::computeBackgroundField" << endl;
-  }
-
-  // Allocate the background field, storage for the potential, storage for the space-charge, and storage for the
-  // surface charge.
-  MFAMRCellData phi;
-  MFAMRCellData rho;
-  EBAMRIVData   sigma;
-
-  (this->m_amr)->allocate(phi, this->m_fluidRealm, 1);
-  (this->m_amr)->allocate(rho, this->m_fluidRealm, 1);
-  (this->m_amr)->allocate(sigma, this->m_fluidRealm, this->m_plasmaPhase, 1);
-  (this->m_amr)->allocate(m_backgroundField, this->m_fluidRealm, SpaceDim);
-
-  // Copy the potential over from the field solver so we have a better initial guess for the potential. The
-  // space-charge and surface charge must be zero.
-  (this->m_amr)->copyData(phi, (this->m_fieldSolver)->getPotential());
-
-  DataOps::setValue(rho, 0.0);
-  DataOps::setValue(sigma, 0.0);
-
-  // Reset the field solver permittivities. Note that this discards the semi-implicit coefficients for the field update,
-  // but these are refilled on the next solver time step anyways.
-  (this->m_fieldSolver)->setPermittivities();
-
-  const MFAMRCellData& permCell = (this->m_fieldSolver)->getPermittivityCell();
-  const MFAMRFluxData& permFace = (this->m_fieldSolver)->getPermittivityFace();
-  const MFAMRIVData&   permEB   = (this->m_fieldSolver)->getPermittivityEB();
-
-  (this->m_fieldSolver)->setSolverPermittivities(permCell, permFace, permEB);
-
-  // Solve the damn thing, and then compute the electric field onto m_backgroundField.
-  (this->m_fieldSolver)->solve(phi, rho, sigma, false);
-  (this->m_fieldSolver)->computeElectricField(m_backgroundField, phi);
-}
 
 template <typename I, typename C, typename R, typename F>
-std::pair<Real, Real>
-ItoKMCIntegrateVariableOnDomainWall<I, C, R, F>::evaluateSpaceChargeEffects() noexcept
+std::Real
+ItoKMCIntegrateVariableOnDomainWall<I, C, R, F>::integrateVariableOnDomainWall() noexcept
 {
-  CH_TIME("ItoKMCIntegrateVariableOnDomainWall::evaluateSpaceChargeEffects");
+  CH_TIME("ItoKMCIntegrateVariableOnDomainWall::integrateVariableOnDomainWall");
   if (this->m_verbosity > 5) {
-    pout() << "ItoKMCIntegrateVariableOnDomainWall::evaluateSpaceChargeEffects" << endl;
+    pout() << "ItoKMCIntegrateVariableOnDomainWall::integrateVariableOnDomainWall" << endl;
   }
 
   EBAMRCellData poissonNorm;
-  EBAMRCellData laplaceNorm;
-  EBAMRCellData deltaE;
-
+ 
   (this->m_amr)->allocate(poissonNorm, this->m_fluidRealm, this->m_plasmaPhase, 1);
-  (this->m_amr)->allocate(laplaceNorm, this->m_fluidRealm, this->m_plasmaPhase, 1);
-  (this->m_amr)->allocate(deltaE, this->m_fluidRealm, this->m_plasmaPhase, 1);
-
-  // Get the fields in the plasma phase -- the actual field and the background field.
+ 
+  // Get the fields HK: HOW TO GET THE y-FIELD IN THE SOLID PHASE?
   const MFAMRCellData electricField = (this->m_fieldSolver)->getElectricField();
   const EBAMRCellData poissonField  = (this->m_amr)->alias(this->m_plasmaPhase, electricField);
-  const EBAMRCellData laplaceField  = (this->m_amr)->alias(this->m_plasmaPhase, m_backgroundField);
-
-  // Compute the field magnitude, and then the relative change in field magnitude.
-  DataOps::vectorLength(poissonNorm, poissonField);
-  DataOps::vectorLength(laplaceNorm, laplaceField);
-
-  DataOps::copy(deltaE, poissonNorm);
-  DataOps::incr(deltaE, laplaceNorm, -1.0);
-  DataOps::divideFallback(deltaE, laplaceNorm, 0.0);
-
-  (this->m_amr)->arithmeticAverage(deltaE, this->m_fluidRealm, this->m_plasmaPhase);
-  (this->m_amr)->interpGhost(deltaE, this->m_fluidRealm, this->m_plasmaPhase);
-
-  // Iterate through the grid cells and figure out where the field change the most.
+  
+  // Iterate through the grid cells to find elements on the wall .
   //
   // PS: I'm doing this with a direct loop because DataOps::getMaxMin will do ALL cells, including ones that are
   //     covered by a finer level. But we only want to evaluate the valid region.
-  Real relChange = -1.0;
-  Real maxChange = -1.0;
-
-  Real maxSpaceChargeField = 0.0;
-  Real minSpaceChargeField = 0.0;
-  Real maxBackgroundField  = 0.0;
-  Real minBackgroundField  = 0.0;
-
-  DataOps::getMaxMin(maxSpaceChargeField, minSpaceChargeField, poissonNorm, 0);
-  DataOps::getMaxMin(maxBackgroundField, minBackgroundField, laplaceNorm, 0);
+  Real integratedValue = -1.0;
 
   for (int lvl = 0; lvl <= (this->m_amr)->getFinestLevel(); lvl++) {
     const DisjointBoxLayout& dbl   = (this->m_amr)->getGrids(this->m_fluidRealm)[lvl];
@@ -278,7 +187,7 @@ ItoKMCIntegrateVariableOnDomainWall<I, C, R, F>::evaluateSpaceChargeEffects() no
   relChange = ParallelOps::max(relChange);
   maxChange = maxSpaceChargeField / maxBackgroundField - 1.0;
 
-  return std::make_pair(relChange, maxChange);
+  return integratedValue;
 }
 
 #include <CD_NamespaceFooter.H>
