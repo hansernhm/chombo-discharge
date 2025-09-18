@@ -37,12 +37,6 @@ public:
 
 protected:
   /*!
-    @brief Define the electrode
-  */
-  virtual void
-  defineElectrode() noexcept;
-
-  /*!
     @brief Define the dielectric plate.
   */
   virtual void

@@ -33,25 +33,25 @@ namespace Physics {
       ItoKMCIntegrateVariableOnDomainWall(RefCountedPtr<ItoKMCPhysics>& a_physics) noexcept;
 
       /*!
-	@brief Post-initialization operations. Computes the background field.
+	@brief Post-initialization operations. 
       */
       virtual void
       postInitialize() noexcept override final;
 
       /*!
-	@brief Post-regrid operations. Computes the background field.
+	@brief Post-regrid operations. 
       */
       virtual void
       postRegrid() noexcept override final;
 
       /*!
-	@brief Post-checkpoint operations. Computes the background field.
+	@brief Post-checkpoint operations. 
       */
       virtual void
       postCheckpointSetup() noexcept override final;
 
       /*!
-	@brief Print a new step report. This is the old one plus the maximum field change.
+	@brief Print a new step report. Now includes integrated value
       */
       virtual void
       printStepReport() noexcept override final;
@@ -65,7 +65,6 @@ namespace Physics {
 
       /*!
 	@brief Compute a time step used for the advance method
-	@note This function returns a zero value if space charge effects have set in, which lets Driver put plot files in the crash folder.
       */
       virtual Real
       computeDt() override;

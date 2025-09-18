@@ -1,0 +1,92 @@
+/* chombo-discharge
+ * Copyright © 2025 SINTEF Energy Research.
+ * Please refer to Copyright.txt and LICENSE in the chombo-discharge root directory.
+ */
+
+/*!
+  @file   CD_ItoKMCBackgroundEvaluator.H
+  @brief  File containing a subclass of ItoKMCGodunovStepper.
+  @author Robert Marskar
+*/
+
+#ifndef CD_ItoKMCIntegrateVariableOnDomainWall_H
+#define CD_ItoKMCIntegrateVariableOnDomainWall_H
+
+// Our includes
+#include <CD_ItoKMCGodunovStepper.H>
+#include <CD_NamespaceHeader.H>
+
+namespace Physics {
+  namespace ItoKMC {
+
+    /*!
+      @brief Implementation of ItoKMCGodunovStepper that also evaluates the integrated value of a variable over a domian wall at every regrid/time step.
+    */
+    template <typename I = ItoSolver, typename C = CdrCTU, typename R = McPhoto, typename F = FieldSolverMultigrid>
+    class ItoKMCIntegrateVariableOnDomainWall : public ItoKMCGodunovStepper<I, C, R, F>
+    {
+    public:
+      /*!
+	@brief Constructor.
+	@param[in] a_physics Physics kernel that will be used. 
+      */
+      ItoKMCIntegrateVariableOnDomainWall(RefCountedPtr<ItoKMCPhysics>& a_physics) noexcept;
+
+      /*!
+	@brief Post-initialization operations. 
+      */
+      virtual void
+      postInitialize() noexcept override final;
+
+      /*!
+	@brief Post-regrid operations. 
+      */
+      virtual void
+      postRegrid() noexcept override final;
+
+      /*!
+	@brief Post-checkpoint operations. 
+      */
+      virtual void
+      postCheckpointSetup() noexcept override final;
+
+      /*!
+	@brief Print a new step report. Now includes integrated value
+      */
+      virtual void
+      printStepReport() noexcept override final;
+
+      /*!
+	@brief Overriden advance method.
+	@param[in] a_dt Time step
+      */
+      virtual Real
+      advance(const Real a_dt) override;
+
+      /*!
+	@brief Compute a time step used for the advance method
+      */
+      virtual Real
+      computeDt() override;
+
+    protected:
+      /*!
+	@brief variable
+      */
+      Real m_integratedValue;
+
+      /*!
+	@brief Integrate variable over domain wall. For example y-Electric field over wall area
+	@return Returns: integrated value
+      */
+ 
+      integrateVariableOnDomainWall() noexcept;
+    };
+  } // namespace ItoKMC
+} // namespace Physics
+
+#include <CD_NamespaceFooter.H>
+
+#include <CD_ItoKMCIntegrateVariableOnDomainWallImplem.H>
+
+#endif
