@@ -18,6 +18,9 @@
 
 using namespace Physics::ItoKMC;
 
+// HK not sure about this
+using namespace AmrMesh; 
+
 template <typename I, typename C, typename R, typename F>
 ItoKMCIntegrateVariableOnDomainWall<I, C, R, F>::ItoKMCIntegrateVariableOnDomainWall(RefCountedPtr<ItoKMCPhysics>& a_physics) noexcept
   : ItoKMCGodunovStepper<I, C, R, F>(a_physics)
@@ -140,9 +143,8 @@ ItoKMCIntegrateVariableOnDomainWall<I, C, R, F>::integrateVariableOnDomainWall()
  
   // Get the fields HK: HOW TO GET THE y-FIELD IN THE SOLID PHASE?
   const MFAMRCellData electricField = (this->m_fieldSolver)->getElectricField();
-  const EBAMRCellData poissonField  = (this->m_amr)->alias(this->m_plasmaPhase, electricField);
-  
-  // Iterate through the grid cells to find elements on the wall .
+   
+  // Iterate through the grid cells to find elements on the domain wall .
   //
   // PS: I'm doing this with a direct loop because DataOps::getMaxMin will do ALL cells, including ones that are
   //     covered by a finer level. But we only want to evaluate the valid region.
@@ -179,6 +181,10 @@ ItoKMCIntegrateVariableOnDomainWall<I, C, R, F>::integrateVariableOnDomainWall()
 
       VoFIterator& vofit = (*(this->m_amr)->getVofIterator(this->m_fluidRealm, this->m_plasmaPhase)[lvl])[din];
 
+      // Get domain box . but How ? 
+      //ProblemDomain AmrMesh::getProblemDomains()
+      ///ProblemDomain::domainBox
+      
       BoxLoops::loop(box, regularKernel);
       BoxLoops::loop(vofit, irregularKernel);
     }
