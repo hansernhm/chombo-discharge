@@ -82,7 +82,7 @@ CylindricalVoid::defineDielectric() noexcept
   if (solidPermittivity <= 0.0) {
     MayDay::Error("Aerosol::Aerosol() -- permittivity cannot be <= 0.0");
   }
-  auto torus    = std::make_shared<TorusSDF<Real>>(Vec3::zero(), cavityRadius, cavityCurvature);
+  auto torus    = std::make_shared<TorusSDF<Real>>(Vec3::zeros(), cavityRadius, cavityCurvature);
   auto cylinder = std::make_shared<CylinderSDF<Real>>(Vec3::unit(2) * cavityCurvature,
                                                       -Vec3::unit(2) * cavityCurvature,
                                                       cavityRadius);
