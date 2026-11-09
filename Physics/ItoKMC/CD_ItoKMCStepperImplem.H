@@ -861,6 +861,9 @@ ItoKMCStepper<I, C, R, F>::postCheckpointSetup() noexcept
   // Compute velocities and diffusion coefficients so we're prepared for the next time step.
   this->computeDriftVelocities();
   this->computeDiffusionCoefficients();
+
+  // Fill the neutral density on the mesh.
+  this->fillNeutralDensity();
 }
 
 template <typename I, typename C, typename R, typename F>
